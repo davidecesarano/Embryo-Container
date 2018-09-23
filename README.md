@@ -1,5 +1,5 @@
 # Embryo Container
-Embryo Container is a small Dependency Injection Container for PHP.
+Embryo Container is a small and PSR-11 compatible Dependency Injection Container for PHP.
 
 ## Requirements
 * PHP >= 7.1
