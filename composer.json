@@ -1,0 +1,28 @@
+{
+    "name": "davidecesarano/embryo-container",
+    "type": "library",
+    "description": "A simple and PSR-11 compatible Container.",
+    "keywords": [
+        "php",
+        "psr-11",
+        "container",
+        "service"
+    ],
+    "homepage": "https://github.com/davidecesarano/embryo-container",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Davide Cesarano",
+            "homepage": "https://github.com/davidecesarano"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "psr/container": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Embryo\\": "Embryo/"
+        }
+    }
+}
