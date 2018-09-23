@@ -42,7 +42,7 @@ Note that the anonymous function has access to the current container instance.
 
 ### Using Service
 Using the defined services:
-```
+```php
 $pdo = $container->get('pdo');
 ```
 
@@ -75,4 +75,27 @@ class Hello
 $container = new \Embryo\Container\Container;
 $hello = $container->get('Hello');
 echo $hello->getHello(); // Hello David
+```
+Embryo Container uses PHP's reflection to detect what parameters a constructor needs. In this example, Embryo Container creates a `Person` instance (if it wasn't already created) and pass it as a constructor parameter.
+
+### Service Provider
+Embryo Container can defines a service into a provider extending `ServiceProvider` instance:
+```php
+  use Embryo\Container\Container;
+  use Embryo\Container\ServiceProvider;
+  
+  class TestServiceProvider extends ServiceProvider 
+  {
+    public function register()
+    {
+      $this->container->set('testService', function(){
+        return 'This is a Test Service!';
+      });
+    }
+  }
+  
+  $container = new Container;
+  $test_service_provider = new TestServiceProvider($container);
+  $test_service_provider->register();
+  echo $container['testService']; // This is a Test Service!
 ```
