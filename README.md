@@ -7,7 +7,7 @@ Embryo Container is a small Dependency Injection Container for PHP.
 ## Installation
 Using Composer:
 ```
-$ composer require davidecesarano/embryo-middleware
+$ composer require davidecesarano/embryo-container
 ```
 
 ## Usage
