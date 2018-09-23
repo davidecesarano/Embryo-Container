@@ -1,7 +1,7 @@
 <?php 
 
     /**
-     * ServiceProvideInterface
+     * ServiceProviderInterface
      */
 
     namespace Embryo\Container\Interfaces;
