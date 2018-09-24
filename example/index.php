@@ -2,27 +2,29 @@
 
     require 'vendor/autoload.php';
 
-    $container = new \Embryo\Container\Container;
-
-    class Person {
-        public function getName()
-        {
-            return 'Davide';
-        }
-    }
-
-    class Hello 
+    class Person
     {
-        public function __construct(Person $name)
-        {
-            $this->name = $name->getName();
-        }
-
-        public function getHello()
-        {
-            return 'Hello '.$this->name.'!';
-        }
+      public function getName()
+      {
+        return 'David';
+      }
     }
 
+    class Hello
+    {
+      public $name;
+
+      public function __construct(Person $person)
+      {
+        $this->name = $person->getName();
+      }
+
+      public function getHello()
+      {
+        return 'Hello '.$this->name;
+      }
+    }
+
+    $container = new \Embryo\Container\Container;
     $hello = $container->get('Hello');
-    echo $hello->getHello();
+    echo $hello->getHello(); // Hello David
