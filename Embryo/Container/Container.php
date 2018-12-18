@@ -13,7 +13,7 @@
 
     namespace Embryo\Container;
     
-    use Embryo\Container\Exceptions\ContainerException;
+    use Embryo\Container\Exceptions\{ContainerException, NotFoundException};
     use Psr\Container\ContainerInterface;
     
     class Container implements ContainerInterface, \ArrayAccess 
@@ -24,24 +24,60 @@
         private $registry = [];
         
         /**
-         * Sets service.
+         * Set service.
          *
          * @param string $key 
          * @param callable $resolver 
          */
-        public function set($key, callable $resolver)
+        public function set(string $key, callable $resolver)
         {
             $this->registry[$key] = call_user_func($resolver, $this);
         }
 
         /**
-         * Esegue elemento del container 
+         * Get service. 
          *
          * @param string $key 
-         * @throws ContainerException
+         * @throws InvalidArgumentException
+         * @throws NotFoundException
          * @return mixed 
          */
         public function get($key)
+        {
+            if(!is_string($key)) {
+                throw new \InvalidArgumentException('Key must be a string');
+            }
+
+            if (!$this->has($key)) {
+                throw new NotFoundException("Service not found");
+            }
+            return $this->registry[$key];
+        }
+
+        /**
+         * Returns true if the container can return 
+         * an entry the given identifier.
+         *
+         * @param string $key
+         * @throws InvalidArgumentException
+         * @return bool
+         */
+        public function has($key)
+        {
+            if(!is_string($key)) {
+                throw new \InvalidArgumentException('Key must be a string');
+            }
+            return isset($this->registry[$key]);
+        }
+
+        /**
+         * ...
+         *
+         * @param string $key
+         * @throws ContainerException
+         * @return mixed
+         */
+        public function reflection(string $key)
         {
             if ($this->has($key)) {
                 return $this->registry[$key];
@@ -49,7 +85,7 @@
 
             $reflected_class = new \ReflectionClass($key);
             if (!$reflected_class->isInstantiable()) {
-                throw new ContainerException("$key is not instantiated!");
+                throw new ContainerException("$key is not instantiable");
             }
                         
             if ($constructor = $reflected_class->getConstructor()) {
@@ -59,7 +95,7 @@
                 foreach ($parameters as $parameter) {
                     
                     if ($parameter->getClass()) {
-                        $constructor_parameters[] = $this->get($parameter->getClass()->getName());
+                        $constructor_parameters[] = $this->reflection($parameter->getClass()->getName());
                     } else {
                         $constructor_parameters[] = $parameter;
                     }   
@@ -74,39 +110,27 @@
         }
 
         /**
-         * Returns true if the container can return an entry the given identifier.
-         *
-         * @param string $key
-         * @return boolean
-         */
-        public function has($key)
-        {
-            return isset($this->registry[$key]);
-        }
-
-        /**
          * ------------------------------------------------------------
-         * Overloading
+         * Property overloading
          * ------------------------------------------------------------
          */
         
         /**
-         * Sets inaccessible properties.
+         * Set inaccessible properties.
          * 
          * @param string $key 
          * @param callable $resolver
-         * @example $container['key'] = function() {...}
          */
-        public function __set($key, Callable $resolver)
+        public function __set($key, $resolver)
         {
             $this->set($key, $resolver);
         }
         
         /**
-         * Returns inaccessible properties.
+         * Return inaccessible properties.
          * 
-         * @param string $key 
-         * @example $container['key']
+         * @param string $key
+         * @return mixed
          */
         public function __get($key)
         {
@@ -119,20 +143,52 @@
          * ------------------------------------------------------------
          */
         
+         /**
+          * Assign a value to the specified offset.
+          *
+          * @param string $key
+          * @param callable $resolver
+          * @return void
+          */
         public function offsetSet($key, $resolver) 
         {
             $this->set($key, $resolver);
         }
 
-        public function offsetExists($key) {
-            return isset($this->registry[$key]);
+        /**
+         * Offset to retrieve.
+         *
+         * @param string $key
+         * @return mixed
+         */
+        public function offsetGet($key) 
+        {
+            return $this->get($key);
+        }   
+
+        /**
+         * Whether an offset exists.
+         *
+         * @param string $key
+         * @return bool
+         */
+        public function offsetExists($key) 
+        {
+            return $this->has($key);
         }
 
-        public function offsetUnset($key) {
+        /**
+         * Unset an offset.
+         *
+         * @param string $key
+         * @throws InvalidArgumentException
+         * @return void
+         */
+        public function offsetUnset($key) 
+        {
+            if(!is_string($key)) {
+                throw new \InvalidArgumentException('Key must be a string');
+            }
             unset($this->registry[$key]);
-        }
-
-        public function offsetGet($key) {
-            return isset($this->registry[$key]) ? $this->get($key) : null;
-        }        
+        }     
     }
