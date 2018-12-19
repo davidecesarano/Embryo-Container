@@ -49,7 +49,7 @@
             }
 
             if (!$this->has($key)) {
-                throw new NotFoundException("Service not found");
+                throw new NotFoundException("$key service not found");
             }
             return $this->registry[$key];
         }
@@ -71,7 +71,8 @@
         }
 
         /**
-         * ...
+         * Create and inject dependencies with
+         * PHP's reflection.
          *
          * @param string $key
          * @throws ContainerException
@@ -107,6 +108,23 @@
                 $this->registry[$key] = $reflected_class->newInstance(); 
             }
             return $this->registry[$key];
+        }
+
+        /**
+         * Set service alias.
+         * 
+         * @param string $key 
+         * @param string $keyService
+         */
+        public function alias($key, $keyService)
+        {
+            if (!$this->has($keyService)) {
+                throw new NotFoundException("$key service not found");
+            }
+
+            $this->set($key, function() use($keyService){
+                return $this->get($keyService);
+            });
         }
 
         /**
