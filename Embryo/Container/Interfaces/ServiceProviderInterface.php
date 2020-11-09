@@ -2,6 +2,9 @@
 
     /**
      * ServiceProviderInterface
+     * 
+     * @author Davide Cesarano <davide.cesarano@unipegaso.it>
+     * @link   https://github.com/davidecesarano/embryo-container
      */
 
     namespace Embryo\Container\Interfaces;

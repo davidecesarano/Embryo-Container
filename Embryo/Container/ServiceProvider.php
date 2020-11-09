@@ -14,22 +14,21 @@
 
     namespace Embryo\Container;
 
-    use Embryo\Container\Interfaces\ServiceProviderInterface;
-    use Psr\Container\ContainerInterface;
+    use Embryo\Container\Interfaces\{ContainerBuilderInterface, ServiceProviderInterface};
 
     abstract class ServiceProvider implements ServiceProviderInterface
     {
         /**
-         * @var ContainerInterface $container
+         * @var ContainerBuilderInterface $container
          */
         protected $container;
 
         /**
          * Sets Container.
          *
-         * @param ContainerInterface $container
+         * @param ContainerBuilderInterface $container
          */
-        public function __construct(ContainerInterface $container)
+        public function __construct(ContainerBuilderInterface $container)
         {
             $this->container = $container;
         }

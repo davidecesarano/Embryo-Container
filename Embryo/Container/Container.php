@@ -3,8 +3,8 @@
     /**
      * Container
      * 
-     * PSR-11 Container implementation. Container to prepare, manage, and inject 
-     * application dependencies.
+     * PSR-11 Container implementation. 
+     * Finds an entry of the container by its identifier and returns it.
      * 
      * @author Davide Cesarano <davide.cesarano@unipegaso.it>
      * @link   https://github.com/davidecesarano/embryo-container
@@ -24,22 +24,28 @@
         private $registry = [];
         
         /**
+         * @var bool $autowiring
+         */
+        private $autowiring;
+
+        /**
          * Set service.
          *
-         * @param string $key 
-         * @param callable $resolver 
+         * @param array $registry
+         * @param bool $autowiring
          */
-        public function set(string $key, callable $resolver)
+        public function __construct(array $registry, bool $autowiring = true)
         {
-            $this->registry[$key] = call_user_func($resolver, $this);
+            $this->registry = $registry;
+            $this->autowiring = $autowiring;
         }
 
         /**
          * Get service. 
          *
-         * @param string $key 
-         * @throws InvalidArgumentException
-         * @throws NotFoundException
+         * @template T
+         * @param class-string<T> $key 
+         * @throws \InvalidArgumentException
          * @return mixed 
          */
         public function get($key)
@@ -47,11 +53,7 @@
             if(!is_string($key)) {
                 throw new \InvalidArgumentException('Key must be a string');
             }
-
-            if (!$this->has($key)) {
-                throw new NotFoundException("$key service not found");
-            }
-            return $this->registry[$key];
+            return $this->reflection($key);
         }
 
         /**
@@ -59,7 +61,7 @@
          * an entry the given identifier.
          *
          * @param string $key
-         * @throws InvalidArgumentException
+         * @throws \InvalidArgumentException
          * @return bool
          */
         public function has($key)
@@ -74,19 +76,25 @@
          * Create and inject dependencies with
          * PHP's reflection.
          *
-         * @param string $key
+         * @template T
+         * @param class-string<T> $key
+         * @throws NotFoundException
          * @throws ContainerException
          * @return mixed
          */
-        public function reflection(string $key)
+        private function reflection(string $key)
         {
             if ($this->has($key)) {
                 return $this->registry[$key];
             }
 
+            if (!$this->autowiring) {
+                throw new NotFoundException("Key service not found");
+            }
+
             $reflected_class = new \ReflectionClass($key);
             if (!$reflected_class->isInstantiable()) {
-                throw new ContainerException("$key is not instantiable");
+                throw new ContainerException("Key is not instantiable");
             }
                         
             if ($constructor = $reflected_class->getConstructor()) {
@@ -95,7 +103,7 @@
                 $constructor_parameters = [];
                 foreach ($parameters as $parameter) {
                     
-                    if ($parameter->getClass()) {
+                    if (!is_null($parameter->getClass())) {
                         $constructor_parameters[] = $this->reflection($parameter->getClass()->getName());
                     } else {
                         $constructor_parameters[] = $parameter;
@@ -111,43 +119,16 @@
         }
 
         /**
-         * Set service alias.
-         * 
-         * @param string $key 
-         * @param string $keyService
-         */
-        public function alias($key, $keyService)
-        {
-            if (!$this->has($keyService)) {
-                throw new NotFoundException("$key service not found");
-            }
-
-            $this->set($key, function() use($keyService){
-                return $this->get($keyService);
-            });
-        }
-
-        /**
          * ------------------------------------------------------------
          * Property overloading
          * ------------------------------------------------------------
          */
         
         /**
-         * Set inaccessible properties.
-         * 
-         * @param string $key 
-         * @param callable $resolver
-         */
-        public function __set($key, $resolver)
-        {
-            $this->set($key, $resolver);
-        }
-        
-        /**
          * Return inaccessible properties.
          * 
-         * @param string $key
+         * @template T
+         * @param class-string<T> $key
          * @return mixed
          */
         public function __get($key)
@@ -164,19 +145,17 @@
          /**
           * Assign a value to the specified offset.
           *
-          * @param string $key
-          * @param callable $resolver
+          * @param mixed $key
+          * @param mixed $value
           * @return void
           */
-        public function offsetSet($key, $resolver) 
-        {
-            $this->set($key, $resolver);
-        }
+        public function offsetSet($key, $value) {}
 
         /**
          * Offset to retrieve.
          *
-         * @param string $key
+         * @template T
+         * @param class-string<T> $key
          * @return mixed
          */
         public function offsetGet($key) 
@@ -199,7 +178,7 @@
          * Unset an offset.
          *
          * @param string $key
-         * @throws InvalidArgumentException
+         * @throws \InvalidArgumentException
          * @return void
          */
         public function offsetUnset($key) 

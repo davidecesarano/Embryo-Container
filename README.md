@@ -15,8 +15,8 @@ $ composer require davidecesarano/embryo-container
 ### Create Service
 Services are defined by anonymous functions that return an instance of an object:
 ```php
-$container = new Embryo\Container\Container;
-$container->set('connection', function(){
+$containerBuilder = new Embryo\Container\ContainerBuilder;
+$containerBuilder->set('connection', function(){
     return [
         'host' => 'localhost',
         'db'   => 'database',
@@ -25,7 +25,7 @@ $container->set('connection', function(){
     ];
 });
 
-$container->set('pdo', function($container){
+$containerBuilder->set('pdo', function($container){
     $connection = $container->get('connection');
     $mysql = 'mysql:host='.$connection['host'].';dbname='.$connection['db'], $connection['user'], $connection['pass']);
     return new PDO($mysql);
@@ -36,6 +36,7 @@ Note that the anonymous function has access to the current container instance.
 ### Using Service
 Using the defined services:
 ```php
+$container = $containerBuilder->build();
 $pdo = $container->get('pdo');
 ```
 
