@@ -15,8 +15,8 @@ $ composer require davidecesarano/embryo-container
 ### Create Service
 Services are defined by anonymous functions that return an instance of an object:
 ```php
-$containerBuilder = new Embryo\Container\ContainerBuilder;
-$containerBuilder->set('connection', function(){
+$container = new \Embryo\Container\ContainerBuilder;
+$container->set('connection', function(){
     return [
         'host' => 'localhost',
         'db'   => 'database',
@@ -25,10 +25,10 @@ $containerBuilder->set('connection', function(){
     ];
 });
 
-$containerBuilder->set('pdo', function($container){
+$container->set('pdo', function($container){
     $connection = $container->get('connection');
     $mysql = 'mysql:host='.$connection['host'].';dbname='.$connection['db'], $connection['user'], $connection['pass']);
-    return new PDO($mysql);
+    return new \PDO($mysql);
 });
 ```
 Note that the anonymous function has access to the current container instance.
@@ -36,12 +36,15 @@ Note that the anonymous function has access to the current container instance.
 ### Using Service
 Using the defined services:
 ```php
-$container = $containerBuilder->build();
 $pdo = $container->get('pdo');
 ```
 
 ### Automatic Injection
-Container can automatically create and inject dependencies:
+Container can automatically create and inject dependencies with Autowiring. Autowiring is enabled by default. You can disable it using the container builder:
+```php
+$container->useAutowiring(false);
+```
+Autowiring is the ability of the container to automatically create and inject dependencies. Embryo Container uses PHP's reflection to detect what parameters a constructor needs.
 ```php
 class Person
 {
@@ -66,32 +69,33 @@ class Hello
     }
 }
 
-$container = new \Embryo\Container\Container;
-$hello = $container->reflection('Hello');
+$container = new \Embryo\Container\ContainerBuilder;
+$hello = $container->get('Hello');
 echo $hello->getHello(); // Hello David
 ```
-Embryo Container uses PHP's reflection to detect what parameters a constructor needs. In this example, Embryo Container creates a `Person` instance (if it wasn't already created) and pass it as a constructor parameter.
+In this example, Embryo Container creates a `Person` instance (if it wasn't already created) and pass it as a constructor parameter.
 
 ### Service Provider
 Embryo Container can defines a service into a provider extending `ServiceProvider` instance:
 ```php
-  use Embryo\Container\Container;
-  use Embryo\Container\ServiceProvider;
-  
-  class TestServiceProvider extends ServiceProvider 
-  {
+use Embryo\Container\ContainerBuilder;
+use Embryo\Container\ServiceProvider;
+
+class TestServiceProvider extends ServiceProvider 
+{
     public function register()
     {
-      $this->container->set('testService', function(){
-        return 'This is a Test Service!';
-      });
+        $this->container->set('testService', function($container){
+            $other = $container->get('otherService');
+            return 'This is a Test Service! '.$other;
+        });
     }
-  }
-  
-  $container = new Container;
-  $test_service_provider = new TestServiceProvider($container);
-  $test_service_provider->register();
-  echo $container['testService']; // This is a Test Service!
+}
+
+$container = new ContainerBuilder;
+$test_service_provider = new TestServiceProvider($container);
+$test_service_provider->register();
+echo $container['testService']; // This is a Test Service!
 ```
 
 ## Example
