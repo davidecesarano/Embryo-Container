@@ -131,7 +131,7 @@
          * @param class-string<T> $key
          * @return mixed
          */
-        public function __get($key)
+        public function __get(string $key)
         {
             return $this->get($key);
         }        

@@ -21,6 +21,12 @@
         public function set(string $key, callable $resolver);
 
         /**
+         * @param string $key 
+         * @return mixed
+         */
+        public function get(string $key);
+
+        /**
          * @return ContainerInterface
          */
         public function build(): ContainerInterface;

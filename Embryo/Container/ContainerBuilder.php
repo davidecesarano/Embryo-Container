@@ -14,7 +14,7 @@
     use Embryo\Container\Exceptions\NotFoundException;
     use Psr\Container\ContainerInterface;
 
-    class ContainerBuilder implements ContainerBuilderInterface
+    class ContainerBuilder implements ContainerBuilderInterface, \ArrayAccess
     {
         /**
          * @var array $registry
@@ -64,6 +64,15 @@
         }
 
         /**
+         * @param string $key 
+         * @return mixed
+         */
+        public function get(string $key)
+        {
+            return $this->build()->get($key);
+        }
+
+        /**
          * Set service alias.
          * 
          * @param string $key 
@@ -77,5 +86,91 @@
                 throw new NotFoundException("$key service not found");
             }
             $this->registry[$key] = $this->registry[$keyService];
+        }
+
+        /**
+         * ------------------------------------------------------------
+         * Property overloading
+         * ------------------------------------------------------------
+         */
+
+        /**
+         * Set inaccessible properties.
+         * 
+         * @param string $key 
+         * @param callable $resolver
+         * @return void
+         */
+        public function __set(string $key, callable $resolver)
+        {
+            $this->set($key, $resolver);
+        }
+        
+        /**
+         * Return inaccessible properties.
+         * 
+         * @template T
+         * @param class-string<T> $key
+         * @return mixed
+         */
+        public function __get(string $key)
+        {
+            return $this->get($key);
+        }        
+        
+        /**
+         * ------------------------------------------------------------
+         * ArrayAccess	
+         * ------------------------------------------------------------
+         */
+        
+         /**
+          * Assign a value to the specified offset.
+          *
+          * @param string $key
+          * @param callable $resolver
+          * @return void
+          */
+        public function offsetSet($key, $resolver) 
+        {
+            $this->set($key, $resolver);
+        }
+
+        /**
+         * Offset to retrieve.
+         *
+         * @template T
+         * @param class-string<T> $key
+         * @return mixed
+         */
+        public function offsetGet($key) 
+        {
+            return $this->get($key);
+        }   
+
+        /**
+         * Whether an offset exists.
+         *
+         * @param string $key
+         * @return bool
+         */
+        public function offsetExists($key) 
+        {
+            return $this->build()->has($key);
+        }
+
+        /**
+         * Unset an offset.
+         *
+         * @param string $key
+         * @throws \InvalidArgumentException
+         * @return void
+         */
+        public function offsetUnset($key) 
+        {
+            if(!is_string($key)) {
+                throw new \InvalidArgumentException('Key must be a string');
+            }
+            unset($this->registry[$key]);
         }
     }
