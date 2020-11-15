@@ -4,7 +4,10 @@
 
     class Person
     {
-        public function getName()
+        /**
+         * @return string
+         */
+        public function getName(): string
         {
             return 'David';
         } 
@@ -12,26 +15,33 @@
 
     class Hello
     {
+        /**
+         * @var string $name
+         */
         public $name;
 
+        /**
+         * @param Person $person
+         */
         public function __construct(Person $person)
         {
             $this->name = $person->getName();
         }
 
-        public function getHello()
+        /**
+         * @return string
+         */
+        public function getHello(): string
         {
             return 'This is a reflection! Hello '.$this->name;
         }
     }
 
-    $container = new \Embryo\Container\Container;
-    
-    $container->set('myService', function(){
+    $containerBuilder = new \Embryo\Container\ContainerBuilder;
+    $containerBuilder->set('myService', function(){
         return 'This is myService!<br>';
     });
-
-    $hello = $container->reflection('Hello');
+    $hello = $containerBuilder->get('Hello');
     
-    echo $container->get('myService');
+    echo $containerBuilder['myService'];
     echo $hello->getHello();
