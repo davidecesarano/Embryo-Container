@@ -10,16 +10,18 @@
         public function register()
         {
             $this->container->set('testService', function($container){
-                return 'This is a Test Servicesssssss! '.$container->get('testGet');
+                return 'This is a Test Services! '.$container->get('testGet');
             });
         }
     }
 
     $containerBuilder = new ContainerBuilder;
     $containerBuilder->set('testGet', function(){
-        return 'This is a testGet!';
+        return 'This is a testGet in service or alias!<br>';
     });
     $test_service_provider = new TestServiceProvider($containerBuilder);
     $test_service_provider->register();
-    $container = $containerBuilder->build();
-    echo $container->get('testService');
+    $containerBuilder->alias('testAlias', 'testGet');
+
+    echo $containerBuilder->get('testService');
+    echo $containerBuilder->get('testAlias');

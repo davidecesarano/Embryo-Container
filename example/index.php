@@ -4,6 +4,9 @@
 
     class Person
     {
+        /**
+         * @return string
+         */
         public function getName(): string
         {
             return 'David';
@@ -17,11 +20,17 @@
          */
         public $name;
 
+        /**
+         * @param Person $person
+         */
         public function __construct(Person $person)
         {
             $this->name = $person->getName();
         }
 
+        /**
+         * @return string
+         */
         public function getHello(): string
         {
             return 'This is a reflection! Hello '.$this->name;
@@ -32,9 +41,7 @@
     $containerBuilder->set('myService', function(){
         return 'This is myService!<br>';
     });
-    $container = $containerBuilder->build();
-
-    $hello = $container->get('Hello');
+    $hello = $containerBuilder->get('Hello');
     
-    echo $container->get('myService');
+    echo $containerBuilder['myService'];
     echo $hello->getHello();
