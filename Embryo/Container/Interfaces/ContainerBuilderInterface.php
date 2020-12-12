@@ -30,4 +30,11 @@
          * @return ContainerInterface
          */
         public function build(): ContainerInterface;
+
+        /**
+         * @param string $key 
+         * @param string $keyService
+         * @return void
+         */
+        public function alias(string $key, $keyService);
     }
